@@ -31,3 +31,8 @@ Four public demo records support a real baseline-to-observation StudioNet lifecy
 - Deploy tx: `0xe805e3470fd64f603e011e820c27fc3ef6756be8c9f4d726ea80df098c540d89`
 - Live app: `https://canopypact.pages.dev/`
 
+## Proven StudioNet lifecycle
+
+- Fund pact: `0xce303efe5c3061436cef4a499b0a941dc034add24d6358dd588513c668b356ea`
+- Steward acceptance: `0xcf0b651268dfa9f8298ba9300ce1146f84f31790ab82417f256bfb2485f057d7`
+- Observation consensus and VERIFIED settlement: `0x4ed35fa53fd557b7ae385b21f4a304123e50c6fcb8cfe6118b0b1010d86be520`
