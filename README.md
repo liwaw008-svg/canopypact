@@ -33,4 +33,8 @@ Four public demo records support a real baseline-to-observation StudioNet lifecy
 
 ## Proven StudioNet lifecycle
 
-The replacement deployment is live. Fresh cross-wallet lifecycle transactions are recorded after the final source commit so baseline snapshots are tied to immutable public records.
+- Sponsor funding and in-transaction baseline freeze: `0x1fd8916b69c735064383d7e2cefd7ac1defd98a83ae15a89aed7acce408c42a9`
+- Named steward acceptance from a different wallet: `0x31f0a71877288d0185391e8c232882a3501f0b3393b430b5bb06a80e32512ce4`
+- Observation consensus, stored content digests and VERIFIED settlement: `0xcdb56be8cce0e6d048a0b221f6fa4cd1fb47827d4e4f68a63d0909cd1746b914`
+
+The funded state stores two baseline SHA-256 digests before acceptance. The final state stores two separate observation digests and an empty unmet-goal set.
