@@ -12,4 +12,16 @@ def test_deterministic_settlement_rails():
     assert "elif out=='FAILED':self._pay(p.sponsor,amount)" in S
     assert "on='finalized'" in S
 def test_verified_cannot_hide_unmet_goals():assert "if out=='VERIFIED' and unmet" in S
-
+def test_baseline_is_frozen_during_funding():
+    fund=S.index('def fund_pact'); accept=S.index('def accept_pact')
+    assert 'frozen=self._freeze(urls)' in S[fund:accept]
+    assert 'baseline_snapshots' in S and 'baseline_digests' in S
+    assert 'hashlib.sha256' in S and "mine['digests']==theirs.get('digests')" in S
+def test_review_uses_frozen_baseline_not_live_baseline_urls():
+    review=S[S.index('def _review'):S.index('def submit_observations')]
+    assert 'frozen=json.loads(p.baseline_snapshots)' in review
+    assert 'records=list(frozen)' in review
+    assert 'for url in observations' in review
+    assert 'for url in baseline' not in review
+def test_duplicate_baseline_and_observation_sources_are_rejected():
+    assert S.count('urls[0]==urls[1]')>=2
