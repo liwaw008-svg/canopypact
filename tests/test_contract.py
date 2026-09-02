@@ -25,3 +25,6 @@ def test_review_uses_frozen_baseline_not_live_baseline_urls():
     assert 'for url in baseline' not in review
 def test_duplicate_baseline_and_observation_sources_are_rejected():
     assert S.count('urls[0]==urls[1]')>=2
+def test_leader_snapshot_digest_pairs_are_recomputed():
+    assert "hashlib.sha256(clean(x,2200).encode()).hexdigest() for x in leader_snapshots" in S
+    assert "mine['snapshots']==leader_snapshots" in S

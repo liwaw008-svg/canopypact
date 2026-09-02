@@ -44,9 +44,13 @@ class CanopyPact(gl.Contract):
             return {'snapshots':snapshots,'digests':digests}
         def validate(leader:gl.vm.Result)->bool:
             if not isinstance(leader,gl.vm.Return):return self._agree_error(leader,run)
-            try:mine=run();theirs=leader.calldata
+            try:
+                mine=run();theirs=leader.calldata
+                leader_snapshots=theirs.get('snapshots');leader_digests=theirs.get('digests')
+                if not isinstance(leader_snapshots,list) or not isinstance(leader_digests,list) or len(leader_snapshots)!=len(leader_digests):return False
+                if [hashlib.sha256(clean(x,2200).encode()).hexdigest() for x in leader_snapshots]!=leader_digests:return False
             except gl.vm.UserError:return False
-            return mine['digests']==theirs.get('digests')
+            return mine['snapshots']==leader_snapshots and mine['digests']==leader_digests
         return gl.vm.run_nondet_unsafe(run,validate)
 
     @gl.public.write.payable
