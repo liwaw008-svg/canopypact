@@ -30,8 +30,9 @@ Four public demo records support a real baseline-to-observation StudioNet lifecy
 
 ## Deployment
 
-- Contract: `0xbB65Bd3ffE609873fCf26ABa6aC8B5383b2B2e5d`
-- Deploy tx: `0x311cc47bd2a78bd85e389e19ff913a202715b209ffab6e93aa49e55bcd774ad9`
+- Contract: `0x493A0Afb7440a0f403C8E9D560F8CdB3FDbE783D`
+- Deploy tx: `0x39274688c014d7ac309f9a00cc244819b74b42d7717a2959a7c04d7a54f243cb`
+- Reviewed source: `656ae3f30493cd3cddbfdd44a265a975439b3af4`
 - Live app: `https://canopypact.pages.dev/`
 
 ## Proven StudioNet lifecycle
