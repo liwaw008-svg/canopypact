@@ -37,8 +37,8 @@ Four public demo records support a real baseline-to-observation StudioNet lifecy
 
 ## Proven StudioNet lifecycle
 
-- Sponsor funding and validator-checked baseline freeze: `0x260555b6abeccff0d37e3ee8ac283c1a75b94429aedc1a456212ed28778146a6`
-- Named steward acceptance from a different wallet: `0x7fa3957ebbcd2abff0bbf87d74eac6ae19e22b52e2c48fd6be81ffbb2c99c157`
-- Observation consensus, stored content digests and VERIFIED settlement: `0xe802789f40560461fa173ecc99bb5f9a8e30d60dcbe719024c493ca7a0738c22`
+- Sponsor funding and validator-checked baseline freeze: `0x0930369f31b572919e3d50abbb4b27118b6307f3acd5ece9e21080937c5b5f2c`
+- Named steward acceptance from a different wallet: `0xd2ee681b97573f5c411d33871f293c38cb380661b5624888471b336a3b7a0c89`
+- Observation consensus, stored content digests and VERIFIED settlement: `0x3c68de83e415de0653c664324a3d61525b3b464555cd28a357c9bfa0e51b9f4d`
 
-The funded state stores two baseline SHA-256 digests before acceptance. Direct behavioral tests prove forged leader snapshot/digest pairs are rejected and exact pairs are accepted. The final state stores two separate observation digests and an empty unmet-goal set.
+The funded state stores two baseline SHA-256 digests before acceptance. Direct behavioral tests prove forged leader snapshot/digest pairs are rejected and exact pairs are accepted. The final state stores two separate observation digests and an empty unmet-goal set. The complete accepted run is recorded in `evidence/network-run.json`.

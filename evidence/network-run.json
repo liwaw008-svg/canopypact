@@ -1,0 +1,25 @@
+{
+  "network": "StudioNet",
+  "contract": "0x493A0Afb7440a0f403C8E9D560F8CdB3FDbE783D",
+  "deploymentTransaction": "0x39274688c014d7ac309f9a00cc244819b74b42d7717a2959a7c04d7a54f243cb",
+  "pactId": "CP-FROZEN-1788710947",
+  "transactions": {
+    "fund": "0x0930369f31b572919e3d50abbb4b27118b6307f3acd5ece9e21080937c5b5f2c",
+    "accept": "0xd2ee681b97573f5c411d33871f293c38cb380661b5624888471b336a3b7a0c89",
+    "review": "0x3c68de83e415de0653c664324a3d61525b3b464555cd28a357c9bfa0e51b9f4d"
+  },
+  "finalState": {
+    "status": "SETTLED",
+    "outcome": "VERIFIED",
+    "grantWei": "10000000000000000",
+    "recoveryAt": 1791302964,
+    "baselineDigests": [
+      "99f7f7f02c72400c84fd67e65f286a3d9608dbc63cf68ada61141144e6ce348b",
+      "10745ac7f68be04b863c8974e9c59e503396d131441b3623b9c46e3be1967d9d"
+    ],
+    "observationDigests": [
+      "c8b8660875b70d6cf07e546bc9f32bd434ab1e598782e455ca6d87149dd2dba9",
+      "b15b59b6fe5d2b083abcf6c7e4c57fd022bdf2d0e20db77651f04f5fd8687de4"
+    ]
+  }
+}
