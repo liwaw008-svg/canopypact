@@ -3,7 +3,7 @@ import ast
 S=(Path(__file__).parents[1]/'contracts/contract.py').read_text()
 def test_parses_and_lifecycle_is_complete():
     ast.parse(S)
-    for n in ('fund_pact','accept_pact','cancel_unaccepted','submit_observations','get_pact','list_pacts'):assert f'def {n}' in S
+    for n in ('fund_pact','accept_pact','cancel_unaccepted','recover_expired','submit_observations','get_pact','list_pacts'):assert f'def {n}' in S
 def test_validator_refetches_and_recomputes():
     assert 'gl.nondet.web.get(url)' in S and 'mine=run()' in S and "mine['unmet']==theirs.get('unmet')" in S
 def test_no_e025_nested_equivalence_call():assert 'prompt_non_comparative' not in S and 'eq_principle' not in S
@@ -24,7 +24,9 @@ def test_review_uses_frozen_baseline_not_live_baseline_urls():
     assert 'for url in observations' in review
     assert 'for url in baseline' not in review
 def test_duplicate_baseline_and_observation_sources_are_rejected():
-    assert S.count('urls[0]==urls[1]')>=2
+    assert 'len(set(source_keys))!=len(source_keys)' in S and 'independent HTTPS observation origins required' in S
 def test_leader_snapshot_digest_pairs_are_recomputed():
     assert "hashlib.sha256(clean(x,2200).encode()).hexdigest() for x in leader_snapshots" in S
     assert "mine['snapshots']==leader_snapshots" in S
+def test_sources_are_parsed_and_active_pacts_have_recovery():
+    assert 'urlsplit' in S and "p.recovery_at=u256(now()+2592000)" in S and 'def recover_expired' in S

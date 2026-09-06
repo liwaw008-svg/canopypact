@@ -7,7 +7,9 @@ CanopyPact turns ecological outcome grants into evidence-bound public agreements
 - `fund_pact` locks GEN with a place, at least two goals, a detailed measurement protocol, two distinct HTTPS baseline sources, and a named steward. In that same funding transaction, validators fetch the baseline and commit its exact snapshots and SHA-256 digests.
 - The freeze validator recomputes every leader-returned snapshot digest and rejects mismatched snapshot/digest arrays before state can be stored.
 - `accept_pact` prevents anyone except that steward from taking responsibility.
+- Acceptance opens a 30-day evidence window. If the pact remains unresolved, the sponsor can call `recover_expired` and recover the full grant without depending on the steward.
 - `submit_observations` makes every validator compare independently fetched later observations with the immutable baseline snapshots captured at funding, then recompute the bounded outcome, exact unmet-goal indexes and observation digests.
+- Baseline and observation URLs are parsed as HTTPS origins and normalized paths; malformed sources, duplicate slots, and reused observation origins are rejected.
 - `VERIFIED` pays the steward, `FAILED` refunds the sponsor, `PARTIAL` splits the grant equally, and `UNVERIFIABLE` retains all funds for resubmission.
 - Transfers occur only on finalized consensus.
 

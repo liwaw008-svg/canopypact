@@ -4,6 +4,8 @@ from genlayer import *
 from dataclasses import dataclass
 import json
 import hashlib
+from datetime import datetime,timezone
+from urllib.parse import urlsplit,unquote
 
 EXPECTED='[EXPECTED]'; EXTERNAL='[EXTERNAL]'; TRANSIENT='[TRANSIENT]'; LLM='[LLM_ERROR]'
 OUTCOMES=('VERIFIED','PARTIAL','FAILED','UNVERIFIABLE')
@@ -21,11 +23,21 @@ def indexes(v,n):
         except:continue
         if 0<=i<n and i not in out:out.append(i)
     return sorted(out)
+def parsed_source(value):
+    raw=clean(value,500);p=urlsplit(raw)
+    if p.scheme.lower()!='https' or not p.hostname or p.username or p.password or p.fragment:raise gl.vm.UserError(f'{EXPECTED} valid HTTPS source required')
+    host=p.hostname.lower().rstrip('.')
+    try:port=p.port
+    except:raise gl.vm.UserError(f'{EXPECTED} valid HTTPS source required')
+    path=unquote(p.path or '/')
+    if any(x in ('.','..') for x in path.split('/')):raise gl.vm.UserError(f'{EXPECTED} normalized source path required')
+    return 'https://'+host+((':'+str(port)) if port and port!=443 else ''),'/'+'/'.join(x for x in path.split('/') if x)
+def now():return int(datetime.now(timezone.utc).timestamp())
 
 @allow_storage
 @dataclass
 class Pact:
-    sponsor:Address; steward:Address; place:str; goals:str; protocol:str; amount:u256; status:str; baseline:str; baseline_snapshots:str; baseline_digests:str; observations:str; observation_digests:str; outcome:str; unmet:str; rationale:str
+    sponsor:Address; steward:Address; place:str; goals:str; protocol:str; amount:u256; status:str; recovery_at:u256; baseline:str; baseline_snapshots:str; baseline_digests:str; observations:str; observation_digests:str; outcome:str; unmet:str; rationale:str
 
 class CanopyPact(gl.Contract):
     pacts:TreeMap[str,Pact]; ids:DynArray[str]
@@ -58,23 +70,29 @@ class CanopyPact(gl.Contract):
         key=clean(i,64); value=int(gl.message.value); gs=[clean(x,350) for x in goals[:12] if clean(x,350)]
         urls=[clean(x,500) for x in baseline_urls[:6]]
         if not key or key in self.pacts:raise gl.vm.UserError(f'{EXPECTED} unique pact id required')
-        if value<=0 or len(gs)<2 or len(clean(protocol,1000))<50 or len(urls)<2 or urls[0]==urls[1]:raise gl.vm.UserError(f'{EXPECTED} funded pact, goals, protocol and two distinct baseline sources required')
-        if any(not x.startswith('https://') for x in urls):raise gl.vm.UserError(f'{EXPECTED} HTTPS baseline required')
+        source_keys=[parsed_source(x) for x in urls]
+        if value<=0 or len(gs)<2 or len(clean(protocol,1000))<50 or len(urls)<2 or len(set(source_keys))!=len(source_keys):raise gl.vm.UserError(f'{EXPECTED} funded pact, goals, protocol and independent HTTPS baseline sources required')
         frozen=self._freeze(urls)
-        self.pacts[key]=Pact(gl.message.sender_address,Address(steward),clean(place,300),json.dumps(gs),clean(protocol,1000),u256(value),'FUNDED',json.dumps(urls),json.dumps(frozen['snapshots']),json.dumps(frozen['digests']),'[]','[]','','[]','')
+        self.pacts[key]=Pact(gl.message.sender_address,Address(steward),clean(place,300),json.dumps(gs),clean(protocol,1000),u256(value),'FUNDED',u256(0),json.dumps(urls),json.dumps(frozen['snapshots']),json.dumps(frozen['digests']),'[]','[]','','[]','')
         self.ids.append(key)
 
     @gl.public.write
     def accept_pact(self,i:str)->None:
         p=self._get(i)
         if gl.message.sender_address!=p.steward or p.status!='FUNDED':raise gl.vm.UserError(f'{EXPECTED} invited steward only')
-        p.status='ACTIVE'
+        p.status='ACTIVE';p.recovery_at=u256(now()+2592000)
 
     @gl.public.write
     def cancel_unaccepted(self,i:str)->None:
         p=self._get(i)
         if gl.message.sender_address!=p.sponsor or p.status!='FUNDED':raise gl.vm.UserError(f'{EXPECTED} cancellable sponsor pact required')
         p.status='CANCELLED';self._pay(p.sponsor,int(p.amount))
+
+    @gl.public.write
+    def recover_expired(self,i:str)->None:
+        p=self._get(i)
+        if gl.message.sender_address!=p.sponsor or p.status not in ('ACTIVE','NEEDS_EVIDENCE') or now()<=int(p.recovery_at):raise gl.vm.UserError(f'{EXPECTED} expired active sponsor pact required')
+        p.status='RECOVERED';self._pay(p.sponsor,int(p.amount))
 
     def _review(self,p:Pact,observations:list[str])->dict:
         baseline=json.loads(p.baseline); frozen=json.loads(p.baseline_snapshots)
@@ -104,7 +122,8 @@ class CanopyPact(gl.Contract):
         if gl.message.sender_address!=p.steward or p.status in ('SETTLED','CANCELLED'):raise gl.vm.UserError(f'{EXPECTED} active steward pact required')
         if p.status not in ('ACTIVE','NEEDS_EVIDENCE'):raise gl.vm.UserError(f'{EXPECTED} pact not active')
         urls=[clean(x,500) for x in observation_urls[:8]]
-        if len(urls)<2 or urls[0]==urls[1] or any(not x.startswith('https://') for x in urls):raise gl.vm.UserError(f'{EXPECTED} two distinct HTTPS observations required')
+        source_keys=[parsed_source(x) for x in urls]
+        if len(urls)<2 or len(set(source_keys))!=len(source_keys) or len(set(x[0] for x in source_keys))!=len(source_keys):raise gl.vm.UserError(f'{EXPECTED} independent HTTPS observation origins required')
         result=self._review(p,urls);out=result['outcome'];p.observations=json.dumps(urls);p.observation_digests=json.dumps(result['digests']);p.outcome=out;p.unmet=json.dumps(result['unmet']);p.rationale=result['rationale']
         if out=='UNVERIFIABLE':p.status='NEEDS_EVIDENCE';return
         amount=int(p.amount);p.status='SETTLED'
@@ -115,7 +134,7 @@ class CanopyPact(gl.Contract):
 
     @gl.public.view
     def get_pact(self,i:str)->dict:
-        p=self._get(i);return {'id':i,'sponsor':p.sponsor.as_hex,'steward':p.steward.as_hex,'place':p.place,'goals':json.loads(p.goals),'protocol':p.protocol,'grant_wei':str(int(p.amount)),'status':p.status,'baseline':json.loads(p.baseline),'baseline_digests':json.loads(p.baseline_digests),'observations':json.loads(p.observations),'observation_digests':json.loads(p.observation_digests),'outcome':p.outcome,'unmet_goal_indexes':json.loads(p.unmet),'rationale':p.rationale}
+        p=self._get(i);return {'id':i,'sponsor':p.sponsor.as_hex,'steward':p.steward.as_hex,'place':p.place,'goals':json.loads(p.goals),'protocol':p.protocol,'grant_wei':str(int(p.amount)),'status':p.status,'recovery_at':int(p.recovery_at),'baseline':json.loads(p.baseline),'baseline_digests':json.loads(p.baseline_digests),'observations':json.loads(p.observations),'observation_digests':json.loads(p.observation_digests),'outcome':p.outcome,'unmet_goal_indexes':json.loads(p.unmet),'rationale':p.rationale}
     @gl.public.view
     def list_pacts(self)->list:return [self.get_pact(i) for i in self.ids]
     def _pay(self,to:Address,amount:int)->None:
