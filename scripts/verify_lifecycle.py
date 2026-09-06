@@ -14,8 +14,8 @@ def wait(c,h):
 sponsor=create_account(account_private_key=secret(3)); steward=create_account(account_private_key=secret(4))
 sc=create_client(chain=studionet,account=sponsor); wc=create_client(chain=studionet,account=steward)
 address=json.loads((ROOT/'deployment.json').read_text())['contract']; pact='CP-FROZEN-'+str(int(time.time()))
-base='https://raw.githubusercontent.com/liwaw008-svg/canopypact/2557aec/evidence/'
-baseline=[base+'demo-baseline-a.json',base+'demo-baseline-b.json']; observations=[base+'demo-observation-a.json',base+'demo-observation-b.json']
+raw='https://raw.githubusercontent.com/liwaw008-svg/canopypact/5a02e15/evidence/';cdn='https://cdn.jsdelivr.net/gh/liwaw008-svg/canopypact@5a02e15/evidence/'
+baseline=[raw+'demo-baseline-a.json',cdn+'demo-baseline-b.json']; observations=[raw+'demo-observation-a.json',cdn+'demo-observation-b.json']
 goals=['At least 85 percent of planted trees remain viable at observation','Mulched soil coverage is visible across every declared row','Public records identify the date, parcel and six-row sampling method']
 protocol='Compare the frozen dated baseline with later public observations using the same six-row transect. Verify location and capture date, count visible viable trees and documented losses, and preserve uncertainty when a record cannot be authenticated.'
 funded=sc.write_contract(address=address,function_name='fund_pact',args=[pact,steward.address,'North bank community orchard parcel C7',goals,protocol,baseline],value=10**16);print('fund',funded,flush=True);wait(sc,funded)
